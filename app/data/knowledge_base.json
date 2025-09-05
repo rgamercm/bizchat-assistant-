@@ -1,0 +1,82 @@
+{
+  "intents": [
+    {
+      "tag": "saludo",
+      "patterns": [
+        "Hola",
+        "Buenos días",
+        "¿Cómo estás?",
+        "Hey",
+        "Hola, necesito ayuda"
+      ],
+      "responses": [
+        "¡Hola! Bienvenido a BizChat Tienda. ¿En qué puedo ayudarte hoy?",
+        "¡Hola! ¿Cómo estás? Estoy aquí para asistirte.",
+        "¡Buenos días! Encantado de verte. ¿En qué te puedo ayudar?"
+      ]
+    },
+    {
+      "tag": "despedida",
+      "patterns": [
+        "Adiós",
+        "Chao",
+        "Hasta luego",
+        "Nos vemos",
+        "Gracias, eso es todo"
+      ],
+      "responses": [
+        "¡Hasta luego! Fue un plazo ayudarte.",
+        "¡Que tengas un gran día!",
+        "Adiós, vuelve pronto."
+      ]
+    },
+    {
+      "tag": "horario_atencion",
+      "patterns": [
+        "¿Cuáles son sus horarios?",
+        "¿A qué hora abren?",
+        "¿Hasta qué hora cierran?",
+        "¿Están abiertos los fines de semana?"
+      ],
+      "responses": [
+        "Nuestro horario de atención es de Lunes a Viernes de 9:00 am a 6:00 pm.",
+        "Abrimos de Lunes a Viernes de 9 am a 6 pm. ¡Estamos para servirte!"
+      ]
+    },
+    {
+      "tag": "metodos_pago",
+      "patterns": [
+        "¿Qué métodos de pago aceptan?",
+        "¿Puedo pagar con tarjeta?",
+        "¿Aceptan PayPal?",
+        "¿Hacen transferencias?"
+      ],
+      "responses": [
+        "Aceptamos todos los métodos de pago: tarjetas de crédito/débito (Visa, MasterCard), PayPal y transferencias bancarias."
+      ]
+    },
+    {
+      "tag": "agradecimiento",
+      "patterns": [
+        "Gracias",
+        "Gracias por la ayuda",
+        "Te lo agradezco",
+        "Perfecto, gracias"
+      ],
+      "responses": [
+        "¡De nada! Estoy aquí para lo que necesites.",
+        "¡Fue un placer ayudarte!",
+        "¡No hay problema! Para eso estoy."
+      ]
+    },
+    {
+      "tag": "fallback",
+      "patterns": [],
+      "responses": [
+        "Lo siento, no entendí completamente tu pregunta. ¿Podrías intentar formularla de otra manera?",
+        "Vaya, mi conocimiento no alcanza para responder eso aún. ¿Puedo ayudarte con algo más?",
+        "Voy a necesitar que un humano me ayude con eso. Mientras tanto, ¿hay algo más en lo que pueda asistirte?"
+      ]
+    }
+  ]
+}
