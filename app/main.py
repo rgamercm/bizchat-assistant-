@@ -1,7 +1,19 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from app.chatbot import Chatbot  # Importamos nuestra clase Chatbot
+
+# Usaremos un diccionario para almacenar instancias de chatbot por sesión
+# En una app real, usarías cookies o bases de datos para sessions
+user_sessions = {}
+
+def get_chatbot_for_session(session_id: str) -> Chatbot:
+    """Obtiene o crea una instancia de chatbot para una sesión específica."""
+    if session_id not in user_sessions:
+        user_sessions[session_id] = Chatbot('data/knowledge_base.json', max_history=5)
+        print(f"Nueva sesión creada: {session_id}")
+    return user_sessions[session_id]
+
 
 # Define un modelo Pydantic para la estructura de la solicitud (request)
 # Esto valida automáticamente que los datos entrantes tengan el formato correcto.
@@ -46,23 +58,35 @@ app.add_middleware(
 # Se crea al iniciar la aplicación y estará disponible para todos los requests.
 chatbot = Chatbot('data/knowledge_base.json')
 
-# Define el endpoint principal de la API
 @app.post("/chat", response_model=ChatResponse)
-async def chat_endpoint(chat_request: ChatRequest):
+async def chat_endpoint(chat_request: ChatRequest, session_id: str = "default"):
     """
     Endpoint para enviar un mensaje al chatbot y recibir su respuesta.
 
     - **message**: El mensaje/texto del usuario.
+    - **session_id**: ID de sesión para mantener contexto (opcional).
     """
-    print(f"[API] Received message: '{chat_request.message}'")
+    print(f"[API] Received message from session '{session_id}': '{chat_request.message}'")
+    
+    # Obtener el chatbot para esta sesión específica
+    session_chatbot = get_chatbot_for_session(session_id)
     
     # Usa la instancia del chatbot para obtener una respuesta
-    bot_response = chatbot.get_response(chat_request.message)
+    bot_response = session_chatbot.get_response(chat_request.message)
     
     print(f"[API] Sending response: '{bot_response}'")
     
-    # Devuelve la respuesta empaquetada en el modelo de respuesta
     return ChatResponse(response=bot_response)
+
+# Nuevo endpoint para limpiar el historial de una sesión
+@app.post("/clear-history")
+async def clear_history(session_id: str = "default"):
+    """Limpia el historial de conversación para una sesión específica."""
+    if session_id in user_sessions:
+        user_sessions[session_id].clear_history()
+        return {"message": f"Historial de sesión {session_id} limpiado."}
+    return {"message": "Sesión no encontrada."}
+
 
 # Endpoint de prueba para verificar que la API está funcionando
 @app.get("/")

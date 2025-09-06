@@ -1,35 +1,32 @@
 import json
 import os
 import random
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Deque
+from collections import deque
 
 # Importamos spaCy y cargamos el modelo de lenguaje
 import spacy
+# Importamos nuestro singleton del modelo NLP
+from app.nlp_utils import nlp_model
 
 class Chatbot:
     """Clase principal que representa el chatbot y su lógica."""
 
-    def __init__(self, knowledge_base_path: str):
+    def __init__(self, knowledge_base_path: str, max_history: int = 5):
         """
-        Inicializa el chatbot cargando la base de conocimiento y el modelo de NLP.
-
-        Args:
-            knowledge_base_path (str): Ruta al archivo JSON de la base de conocimiento.
+        Inicializa el chatbot cargando la base de conocimiento.
         """
         self.knowledge_base_path = knowledge_base_path
         self.intents = []
-        # Cargar el modelo de spaCy (asegúrate de haberlo descargado: 'python -m spacy download es_core_news_md')
-        try:
-            self.nlp = spacy.load("es_core_news_md") # Usa 'en_core_web_md' para inglés
-            print("Modelo de lenguaje de spaCy cargado exitosamente.")
-        except OSError:
-            print("Error: El modelo de spaCy 'es_core_news_md' no está instalado.")
-            print("Por favor, ejecuta en tu terminal: 'python -m spacy download es_core_news_md'")
-            exit(1)
-
+        self.max_history = max_history
+        self.conversation_history: Deque[Dict[str, str]] = deque(maxlen=max_history)
+        
+        # Usamos el modelo singleton en lugar de cargarlo nosotros mismos
+        self.nlp = nlp_model.get_model()
+        
         self.load_knowledge_base()
-        # Preprocesamos TODOS los patterns de la base de conocimiento una sola vez al iniciar
         self.preprocess_intents()
+        print(f"Chatbot inicializado para sesión. Base de conocimiento: {len(self.intents)} intenciones.")
 
     def load_knowledge_base(self) -> None:
         """Carga la base de conocimiento desde el archivo JSON."""
@@ -54,6 +51,71 @@ class Chatbot:
         """
         for intent in self.intents:
             intent['patterns_processed'] = [self.nlp(pattern) for pattern in intent['patterns']]
+
+    def add_to_history(self, user_message: str, bot_response: str) -> None:
+        """
+        Añade una interacción (user + bot) al historial de conversación.
+        """
+        self.conversation_history.append({
+            "user": user_message,
+            "bot": bot_response
+        })
+
+    def get_contextual_input(self, user_input: str) -> str:
+        """
+        Construye la entrada contextual incluyendo el historial reciente.
+        Esto ayuda al chatbot a entender el contexto de la pregunta.
+        """
+        if not self.conversation_history:
+            return user_input  # No hay historial, devolver solo la entrada actual
+
+        # Construir un string con las últimas interacciones
+        context_lines = []
+        for interaction in self.conversation_history:
+            context_lines.append(f"Usuario: {interaction['user']}")
+            context_lines.append(f"Asistente: {interaction['bot']}")
+        
+        # Unimos el historial y añadimos la nueva pregunta
+        context = "\n".join(context_lines)
+        contextual_input = f"{context}\nUsuario: {user_input}"
+        
+        return contextual_input
+
+    def get_response(self, user_input: str) -> str:
+        """
+        Función principal para obtener una respuesta del chatbot.
+        Ahora con contexto de conversación.
+        """
+        if not user_input:
+            return "Por favor, escribe algo."
+
+        # 1. Preprocesar la entrada del usuario
+        processed_input = self.preprocess_input(user_input)
+        print(f"Entrada procesada: '{processed_input.text}'")
+
+        # 2. Obtener entrada contextual (incluye historial)
+        contextual_input = self.get_contextual_input(user_input)
+        processed_contextual = self.preprocess_input(contextual_input)
+        print(f"Entrada contextual: '{processed_contextual.text}'")
+
+        # 3. Encontrar la intención más similar (usando el contexto)
+        matched_intent = self.find_most_similar_intent(processed_contextual)
+
+        # 4. Seleccionar una respuesta aleatoria
+        if matched_intent and 'responses' in matched_intent:
+            response = random.choice(matched_intent['responses'])
+            # 5. Añadir esta interacción al historial
+            self.add_to_history(user_input, response)
+            return response
+        else:
+            fallback_msg = "Lo siento, no estoy seguro de cómo responder a eso."
+            self.add_to_history(user_input, fallback_msg)
+            return fallback_msg
+
+    def clear_history(self) -> None:
+        """Limpia el historial de conversación."""
+        self.conversation_history.clear()
+        print("Historial de conversación limpiado.")
 
     def preprocess_input(self, user_input: str):
         """

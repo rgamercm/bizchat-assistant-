@@ -1,3 +1,8 @@
+// Añade esta variable al principio del archivo
+let sessionId = Math.random().toString(36).substring(2, 10); 
+// Genera un ID de sesión único
+
+
 // URL base de nuestra API - ¡IMPORTANTE! Usa la misma que donde corre FastAPI
 // Asegúrate de que esta URL sea correcta
 // Debe ser el mismo puerto donde corre FastAPI (8000)
@@ -29,13 +34,9 @@ function addMessage(message, isUser = false) {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
 
-// Función para enviar mensaje al chatbot
 async function sendMessageToChatbot(message) {
     try {
-        // Mostrar un indicador de "escribiendo..." (puedes mejorarlo luego)
-        // addMessage("Escribiendo...", false);
-        
-        const response = await fetch(`${API_BASE_URL}/chat`, {
+        const response = await fetch(`${API_BASE_URL}/chat?session_id=${sessionId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -48,11 +49,26 @@ async function sendMessageToChatbot(message) {
         }
 
         const data = await response.json();
-        return data.response;
+        return data.response; // ← ¡ESTA LÍNEA ES CRUCIAL!
         
     } catch (error) {
         console.error('Error al comunicarse con la API:', error);
         return 'Lo siento, hubo un error al procesar tu solicitud.';
+    }
+}
+
+// Opcional: Función para limpiar historial
+async function clearChatHistory() {
+    try {
+        await fetch(`${API_BASE_URL}/clear-history?session_id=${sessionId}`, {
+            method: 'POST'
+        });
+        console.log("Historial limpiado");
+        // También limpia la interfaz
+        document.getElementById('chat-messages').innerHTML = '';
+        addMessage('¡Hola! La conversación ha sido reiniciada. ¿En qué puedo ayudarte?', false);
+    } catch (error) {
+        console.error('Error al limpiar historial:', error);
     }
 }
 
