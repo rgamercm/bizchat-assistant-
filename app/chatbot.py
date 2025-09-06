@@ -119,45 +119,56 @@ class Chatbot:
 
     def preprocess_input(self, user_input: str):
         """
-        Preprocesa la entrada del usuario usando el mismo pipeline de spaCy.
-
-        Args:
-            user_input (str): La pregunta o texto escrito por el usuario.
-
-        Returns:
-            Doc: Un objeto Doc de spaCy que representa el texto procesado.
+        Preprocesa la entrada del usuario de manera más robusta.
         """
-        return self.nlp(user_input.lower().strip())
+        # 1. Convertir a minúsculas
+        # 2. Eliminar tildes y caracteres especiales
+        # 3. Eliminar signos de puntuación extraños
+        processed_text = user_input.lower().strip()
+        
+        # Eliminar tildes (á → a, é → e, etc.)
+        import unicodedata
+        processed_text = ''.join(
+            c for c in unicodedata.normalize('NFD', processed_text)
+            if unicodedata.category(c) != 'Mn'
+        )
+        
+        # Eliminar signos de puntuación (opcional, pero ayuda)
+        processed_text = ''.join(c for c in processed_text if c.isalnum() or c.isspace())
+        
+        return self.nlp(processed_text)
 
     def find_most_similar_intent(self, processed_input) -> Dict[str, Any]:
         """
         Encuentra la intención cuya lista de patrones es más similar a la entrada del usuario.
-
-        Args:
-            processed_input (Doc): La entrada del usuario, procesada por spaCy.
-
-        Returns:
-            Dict[str, Any]: La intención más similar encontrada.
+        Ahora con logs de debug detallados.
         """
         best_similarity = 0.0
         best_intent = None
+        best_pattern = ""
 
         # Itera sobre cada intención en la base de conocimiento
         for intent in self.intents:
             # Itera sobre cada pattern preprocesado de esta intención
             for pattern_doc in intent['patterns_processed']:
                 # spaCy puede calcular la similitud entre dos objetos Doc
-                # similarity() devuelve un valor entre 0 (nada similar) y 1 (idéntico)
                 current_similarity = processed_input.similarity(pattern_doc)
-                # print(f"Comparando '{processed_input.text}' con '{pattern_doc.text}': {current_similarity}") # <-- Descomenta para debug
-
+                
+                # Debug: mostrar todas las comparaciones
+                print(f"  Comparando '{processed_input.text}' con '{pattern_doc.text}': {current_similarity}")
+                
                 # Si encontramos una similitud mayor, la guardamos
                 if current_similarity > best_similarity:
                     best_similarity = current_similarity
                     best_intent = intent
+                    best_pattern = pattern_doc.text
 
-        # Define un umbral de similitud. Ajusta este valor según tus pruebas (0.5-0.7 es un buen inicio).
-        similarity_threshold = 0.6
+        # Muestra el mejor match encontrado
+        print(f"MEJOR MATCH: '{processed_input.text}' vs '{best_pattern}': {best_similarity}")
+
+        # Define un umbral de similitud. Ajusta este valor según tus pruebas.
+        # Umbral más bajo para desarrollo (0.4) - puedes ajustarlo según pruebas
+        similarity_threshold = 0.4
         print(f"Similitud más alta encontrada: {best_similarity} (Umbral: {similarity_threshold})")
 
         # Si la similitud no supera el umbral, devolvemos la intención de fallback
@@ -166,6 +177,7 @@ class Chatbot:
             for intent in self.intents:
                 if intent['tag'] == 'fallback':
                     return intent
+        
         # Si la supera, devolvemos la mejor intención encontrada
         return best_intent
 

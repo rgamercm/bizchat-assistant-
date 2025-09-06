@@ -18,16 +18,36 @@
     {
       "tag": "despedida",
       "patterns": [
-        "Adiós",
-        "Chao",
-        "Hasta luego",
-        "Nos vemos",
-        "Gracias, eso es todo"
+        "Adiós", "adiós", "adios", "Adios",
+        "Chao", "chao", 
+        "Hasta luego", "hasta luego", "hasta pronto",
+        "Nos vemos", "nos vemos",
+        "Gracias, eso es todo", "gracias eso es todo",
+        "Bye", "bye", "Goodbye", "goodbye",
+        "Hasta la proxima", "hasta la proxima",
+        "Me voy", "me voy", "tengo que irme"
       ],
       "responses": [
-        "¡Hasta luego! Fue un plazo ayudarte.",
+        "¡Hasta luego! Fue un placer ayudarte.",
         "¡Que tengas un gran día!",
-        "Adiós, vuelve pronto."
+        "Adiós, vuelve pronto.",
+        "¡Nos vemos! Fue genial conversar contigo."
+      ]
+    },
+    {
+      "tag": "metodos_pago",
+      "patterns": [
+        "¿Qué métodos de pago aceptan?",
+        "¿Aceptan tarjetas?",
+        "métodos de pago", "metodos de pago",
+        "formas de pago", "medios de pago",
+        "¿Puedo pagar con?",
+        "tarjetas de crédito", "tarjetas de debito",
+        "transferencia", "paypal", "efectivo",
+        "¿Cómo puedo pagar?", "como pagar"
+      ],
+      "responses": [
+        "Aceptamos todos los métodos de pago: tarjetas de crédito/débito (Visa, MasterCard), PayPal y transferencias bancarias."
       ]
     },
     {
@@ -41,18 +61,6 @@
       "responses": [
         "Nuestro horario de atención es de Lunes a Viernes de 9:00 am a 6:00 pm.",
         "Abrimos de Lunes a Viernes de 9 am a 6 pm. ¡Estamos para servirte!"
-      ]
-    },
-    {
-      "tag": "metodos_pago",
-      "patterns": [
-        "¿Qué métodos de pago aceptan?",
-        "¿Puedo pagar con tarjeta?",
-        "¿Aceptan PayPal?",
-        "¿Hacen transferencias?"
-      ],
-      "responses": [
-        "Aceptamos todos los métodos de pago: tarjetas de crédito/débito (Visa, MasterCard), PayPal y transferencias bancarias."
       ]
     },
     {
