@@ -1,0 +1,6 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+spacy==3.7.2
+scikit-learn==1.3.2
+# Asegúrate de que la versión del modelo de spaCy coincida con la instalada
+# No es necesario añadirlo aquí, se instala aparte con el comando 'spacy download'
